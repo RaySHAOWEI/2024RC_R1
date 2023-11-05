@@ -1,0 +1,17 @@
+{
+    "files.associations": {
+        "limits": "c",
+        "memory": "c",
+        "atomic": "c",
+        "bit": "c",
+        "compare": "c",
+        "cstddef": "c",
+        "type_traits": "c",
+        "xmemory": "c",
+        "xstring": "c",
+        "xutility": "c",
+        "pid.h": "c",
+        "main.h": "c",
+        "rm_motor.h": "c"
+    }
+}
