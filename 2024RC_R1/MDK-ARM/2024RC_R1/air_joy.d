@@ -36,3 +36,4 @@
 2024rc_r1\air_joy.o: ../Core/Inc/tim.h
 2024rc_r1\air_joy.o: ../Core/Inc/gpio.h
 2024rc_r1\air_joy.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdio.h
+2024rc_r1\air_joy.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\string.h

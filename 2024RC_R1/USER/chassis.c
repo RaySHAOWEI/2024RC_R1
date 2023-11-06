@@ -3,7 +3,6 @@
 //
 
 #include "chassis.h"
-#include "air_joy.h"
 
 MOTOR_REAL_INFO ChassisInfo[4];
 PID_T Chassis_PID_RPM[4]; //速度pid信息
@@ -109,47 +108,18 @@ void ROBOT_CHASSIS_INIT(void)
     ROBOT_chassis.TPlaning.Vstart = 0;
 }
 
-void chassis_motor_init(void)
-{
-    ChassisInfo[0].Motor_Type = M_3508;
-    ChassisInfo[1].Motor_Type = M_3508;
-    ChassisInfo[2].Motor_Type = M_3508;
-    ChassisInfo[3].Motor_Type = M_3508;
-
-    pid_param_init(&Chassis_PID_RPM[0], PID_Incremental, 16384, 20000, 20000, -0.5f, 16384, 7.0f, 0.0f, 0.1f);
-    pid_param_init(&Chassis_PID_RPM[1], PID_Incremental, 16384, 20000, 20000, -0.5f, 16384, 7.0f, 0.0f, 0.1f);
-    pid_param_init(&Chassis_PID_RPM[2], PID_Incremental, 16384, 20000, 20000, -0.5f, 16384, 7.0f, 0.0f, 0.1f);
-    pid_param_init(&Chassis_PID_RPM[3], PID_Incremental, 16384, 20000, 20000, -0.5f, 16384, 7.0f, 0.0f, 0.1f);
-
-}
-
-#define Vy_MAX 6000.0F
-#define Vx_MAX 6000.0F
-#define Vw_MAX 30.0f
-#define VX_CONTROL 0.15f
-#define Angle_MAX 1.0f
-
-void free_ctrl(void)
-{
-    if(YaoGan_RIGHT_X!=0 && YaoGan_LEFT_Y!=0 && YaoGan_LEFT_X!=0)
-    {
-        ROBOT_chassis.Vx =((YaoGan_LEFT_Y-1500.0f)/500)*Vx_MAX;
-        ROBOT_chassis.Vy =((YaoGan_LEFT_X-1500.0f)/500)*Vy_MAX;
-        ROBOT_chassis.Vw =((YaoGan_RIGHT_X-1500.0f)/500)*Vw_MAX;
-    }
-}
-
 /*电机正方向以及编号沿顺时针
 Vx为线速度，Vy为角速度，W为自转角速度
 */
+//cos(PI/4)=0.7071
 // 底盘运动学结算
 void chassis_kinematic(void)
 {
-    float a = cos(PI/4);
-    ROBOT_chassis.Target_RPM[0] = (-ROBOT_chassis.Vy) * a + ROBOT_chassis.Vx * a + (ROBOT_chassis.Vw) * L;
-    ROBOT_chassis.Target_RPM[1] = (-ROBOT_chassis.Vy) * a - ROBOT_chassis.Vx * a + (ROBOT_chassis.Vw) * L;
-    ROBOT_chassis.Target_RPM[2] = (ROBOT_chassis.Vy) * a - ROBOT_chassis.Vx * a + (ROBOT_chassis.Vw) * L;
-    ROBOT_chassis.Target_RPM[3] = (ROBOT_chassis.Vy) * a + ROBOT_chassis.Vx * a + (ROBOT_chassis.Vw) * L;
+    float a = 0.7071;
+    ROBOT_chassis.Target_RPM[0] = (-ROBOT_chassis.Vy) * a + (ROBOT_chassis.Vx * a) + (ROBOT_chassis.Vw) * L;
+    ROBOT_chassis.Target_RPM[1] = (-ROBOT_chassis.Vy) * a - (ROBOT_chassis.Vx * a) + (ROBOT_chassis.Vw) * L;
+    ROBOT_chassis.Target_RPM[2] = (ROBOT_chassis.Vy) * a - (ROBOT_chassis.Vx * a) + (ROBOT_chassis.Vw) * L;
+    ROBOT_chassis.Target_RPM[3] = (ROBOT_chassis.Vy) * a + (ROBOT_chassis.Vx * a) + (ROBOT_chassis.Vw) * L;
 
     for(int i=0; i < 4; i++) {
         ChassisInfo[i].Motor_Mode = SPEED_CONTROL_MODE;

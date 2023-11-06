@@ -39,3 +39,4 @@
 2024rc_r1\usr_can.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\math.h
 2024rc_r1\usr_can.o: ..\USER\pid.h
 2024rc_r1\usr_can.o: ..\USER\chassis.h
+2024rc_r1\usr_can.o: ..\USER\air_joy.h

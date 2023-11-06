@@ -31,6 +31,7 @@
 #include "rm_motor.h"
 #include "usr_can.h"
 #include "air_joy.h"
+#include "FSM.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -178,15 +179,17 @@ void MotorCtrlFunction(void *argument)
 {
   /* USER CODE BEGIN MotorCtrlFunction */
 	can_filter_init();
-	ROBOT_CHASSIS_INIT();
-	chassis_motor_init();
-	Upper_INIT();
+  R1_config();
+	// ROBOT_CHASSIS_INIT();
+	// chassis_motor_init();
+	// Upper_INIT();
 
   /* Infinite loop */
   for(;;)
   {
-	  free_ctrl();
-      chassis_kinematic();
+    fsm();
+	  // free_ctrl();
+    // chassis_kinematic();
 //	belt_ctrl(8192);
 //    claw_motor((SWB - 1500) / 3);
 //    Motor_Control();

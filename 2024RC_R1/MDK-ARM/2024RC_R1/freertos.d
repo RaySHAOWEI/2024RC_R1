@@ -51,3 +51,4 @@
 2024rc_r1\freertos.o: ../USER/usr_can.h
 2024rc_r1\freertos.o: ../USER/chassis.h
 2024rc_r1\freertos.o: ../USER/air_joy.h
+2024rc_r1\freertos.o: ../USER/FSM.h

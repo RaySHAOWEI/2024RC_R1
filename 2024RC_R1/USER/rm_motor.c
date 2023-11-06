@@ -159,7 +159,7 @@ void RM_MOTOR_Angle_Integral(MOTOR_REAL_INFO* RM_MOTOR)
 
 /**
  * @brief 发送电机数据
- * 发送五个电机数据，应该不会再多了
+ * 向can2发送五个电机数据
  * @param NULL
  * @return NULL
 */
@@ -181,12 +181,12 @@ void M3508_Send_Currents(void)
     TxHeader1.StdId = CAN_CHASSIS_ALL_ID;//0x200
 
     // //配置控制端
-    // TxHeader2.IDE = CAN_ID_STD;
-    // TxHeader2.RTR = CAN_RTR_DATA;
-    // TxHeader2.DLC = 0x08;
+    TxHeader2.IDE = CAN_ID_STD;
+    TxHeader2.RTR = CAN_RTR_DATA;
+    TxHeader2.DLC = 0x08;
 
-    // //配置仲裁段和数据段
-    // TxHeader2.StdId = CAN_CHASSIS_OTHER_ID;//0x1FF
+    //配置仲裁段和数据段
+    TxHeader2.StdId = CAN_CHASSIS_OTHER_ID;//0x1FF
 
    TxData[0] = (uint8_t)(motorRealInfo[0].TARGET_CURRENT >> 8);//0x201
    TxData[1] = (uint8_t) motorRealInfo[0].TARGET_CURRENT;
@@ -220,8 +220,7 @@ void M3508_Send_Currents(void)
 
 
     HAL_CAN_AddTxMessage(&hcan2, &TxHeader1, TxData, &Send_Mail_Box);
-
-    // HAL_CAN_AddTxMessage(&hcan2, &TxHeader2, TxData2, &Send_Mail_Box2);
+    HAL_CAN_AddTxMessage(&hcan2, &TxHeader2, TxData2, &Send_Mail_Box2);
 }
 
 /**
@@ -309,22 +308,30 @@ void Motor_Control(void)
                 pid_calc(&MOTOR_PID_POS[i],motorRealInfo[i].Position_Tarque.Pos, motorRealInfo[i].REAL_ANGLE);//位置环
                 pid_calc(&MOTOR_PID_RPM[i], MOTOR_PID_POS[i].output, motorRealInfo[i].RPM);//速度环
                 MOTOR_PID_RPM[i].output = Max_Value_Limit(MOTOR_PID_RPM[i].output,motorRealInfo[i].Position_Tarque.TARGET_TORQUE);//限制转矩模式时电流值
+                
+                if(motorRealInfo[i].CURRENT >= 2 * motorRealInfo[i].Position_Tarque.TARGET_TORQUE)//判断是否堵转（待测试）
+                {
+                    motorRealInfo[i].Position_Tarque.Flag = 1;
+                }
+                else{
+                    motorRealInfo[i].Position_Tarque.Flag = 0;
+                }
+                
+               //判断是否到达目标位置
+            //    if(fabsf(motorRealInfo[i].RPM) <=10)
+            //    {
+            //        motorRealInfo[i].Position_Tarque.Cnt++;
+            //    }
+            //    else
+            //    {
+            //        motorRealInfo[i].Position_Tarque.Cnt = 0;
+            //    }
 
-//                //判断是否到达目标位置
-//                if(fabsf(motorRealInfo[i].RPM) <=10)
-//                {
-//                    motorRealInfo[i].Position_Tarque.Cnt++;
-//                }
-//                else
-//                {
-//                    motorRealInfo[i].Position_Tarque.Cnt = 0;
-//                }
-
-//                if(motorRealInfo[i].Position_Tarque.Cnt>=50)//50ms
-//                {
-//                    motorRealInfo[i].Position_Tarque.Cnt = 0;
-//                    motorRealInfo[i].Position_Tarque.Flag = 1;
-//                }
+            //    if(motorRealInfo[i].Position_Tarque.Cnt>=50)//50ms
+            //    {
+            //        motorRealInfo[i].Position_Tarque.Cnt = 0;
+            //        motorRealInfo[i].Position_Tarque.Flag = 1;
+            //    }
                 break;
             }
 
@@ -386,7 +393,7 @@ float Max_Value_Limit(float Value, float Limit)
  */
 void Homeing_Mode(MOTOR_REAL_INFO* RM_MOTOR)
 {
-    int Sign_Vel = 1.0f;
+    int Sign_Vel;
     RM_MOTOR->HomingMode.flag = 0;
 
     if (RM_MOTOR->HomingMode.Vel >= 0)

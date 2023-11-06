@@ -12,6 +12,10 @@
         "xutility": "c",
         "pid.h": "c",
         "main.h": "c",
-        "rm_motor.h": "c"
+        "rm_motor.h": "c",
+        "air_joy.h": "c",
+        "chassis.h": "c",
+        "upper.h": "c",
+        "stdio.h": "c"
     }
 }
