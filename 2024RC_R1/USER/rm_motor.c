@@ -200,8 +200,8 @@ void M3508_Send_Currents(void)
    TxData[6] = (uint8_t)(motorRealInfo[3].TARGET_CURRENT >> 8);//0x204
    TxData[7] = (uint8_t) motorRealInfo[3].TARGET_CURRENT;
 
-   TxData2[0] = (uint8_t)(motorRealInfo[0].TARGET_CURRENT >> 8);//0x205
-   TxData2[1] = (uint8_t) motorRealInfo[0].TARGET_CURRENT;
+   TxData2[0] = (uint8_t)(motorRealInfo[4].TARGET_CURRENT >> 8);//0x205
+   TxData2[1] = (uint8_t) motorRealInfo[4].TARGET_CURRENT;
 
 //    TxData[0] = (uint8_t)(10000 >> 8);//0x201
 //    TxData[1] = (uint8_t) 10000;
@@ -261,6 +261,52 @@ void Motor_Control(void)
             {
                 pid_calc(&MOTOR_PID_POS[i],motorRealInfo[i].TARGET_POS, motorRealInfo[i].REAL_ANGLE);//位置环
                 pid_calc(&MOTOR_PID_RPM[i], MOTOR_PID_POS[i].output, motorRealInfo[i].RPM);//速度环
+                
+                // if(ABS(motorRealInfo[i].RPM) < 5)//判断是否堵转（待测试）
+                // {
+                //     motorRealInfo[i].Velflag = 1;
+                //     if(ABS(motorRealInfo[i].CURRENT) > 1.5 * ABS(MOTOR_PID_RPM[i].MaxOutput))
+                //     {
+                //         motorRealInfo[i].stalled = 1;
+                //         motorRealInfo[i].pos_ok = 0;
+                //     }else
+                //     {
+                //         motorRealInfo[i].stalled = 0;
+                //         motorRealInfo[i].pos_ok = 1;
+                //     }
+                // }
+                // else{
+                //     motorRealInfo[i].pos_ok = 0;
+                //     motorRealInfo[i].Velflag = 0;
+                //     motorRealInfo[i].stalled = 0;
+                // }
+
+            //判断是否到达目标位置
+//               if(fabsf(motorRealInfo[i].RPM) <=10)
+//               {
+//                    if(ABS(motorRealInfo[i].CURRENT) > 1.5 * ABS(MOTOR_PID_RPM[i].MaxOutput))
+//                    {
+//                        motorRealInfo[i].Position_Tarque.Cnt = 0;
+//                        motorRealInfo[i].stalled = 1;
+//                    }else
+//                    {
+//                        motorRealInfo[i].Position_Tarque.Cnt++;
+//                        motorRealInfo[i].stalled = 0;
+//                    }
+//               }
+//               else
+//               {
+//                   motorRealInfo[i].Position_Tarque.Cnt = 0;
+//               }
+
+//               if(motorRealInfo[i].Position_Tarque.Cnt >= 50)//50ms
+//               {
+//                
+//                   motorRealInfo[i].Position_Tarque.Cnt = 0;
+//                   motorRealInfo[i].pos_ok = 1;
+//               }
+
+
                 break;
             }
 
@@ -309,7 +355,7 @@ void Motor_Control(void)
                 pid_calc(&MOTOR_PID_RPM[i], MOTOR_PID_POS[i].output, motorRealInfo[i].RPM);//速度环
                 MOTOR_PID_RPM[i].output = Max_Value_Limit(MOTOR_PID_RPM[i].output,motorRealInfo[i].Position_Tarque.TARGET_TORQUE);//限制转矩模式时电流值
                 
-                if(motorRealInfo[i].CURRENT >= 2 * motorRealInfo[i].Position_Tarque.TARGET_TORQUE)//判断是否堵转（待测试）
+                if(ABS(motorRealInfo[i].CURRENT) >  1.2 * ABS(motorRealInfo[i].Position_Tarque.TARGET_TORQUE))//判断是否堵转（待测试）
                 {
                     motorRealInfo[i].Position_Tarque.Flag = 1;
                 }

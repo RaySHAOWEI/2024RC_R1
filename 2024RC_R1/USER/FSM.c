@@ -33,20 +33,25 @@ void Upper_INIT(void)
     motorRealInfo[2].Motor_Type = M_3508;
     motorRealInfo[3].Motor_Type = M_3508;
     motorRealInfo[4].Motor_Type = M_3508;
-    motorRealInfo[5].Motor_Type = NONE;
-    motorRealInfo[6].Motor_Type = NONE;
 
+       //传送带电机
     pid_param_init(&MOTOR_PID_RPM[0], PID_Incremental, 16384, 1024, 0, 0.1f, 16384, 15, 4, 0.1);
     pid_param_init(&MOTOR_PID_RPM[1], PID_Incremental, 16384, 1024, 0, 0.1f, 16384, 15, 4, 0.1);
     pid_param_init(&MOTOR_PID_RPM[2], PID_Incremental, 16384, 1024, 0, 0.1f, 16384, 15, 4, 0.1);
-    pid_param_init(&MOTOR_PID_RPM[3], PID_Incremental, 16384, 1024, 0, 0.1f, 16384, 15, 0, 0);
-    pid_param_init(&MOTOR_PID_RPM[4], PID_Incremental, 16384, 1024, 0, 0.1f, 16384, 10, 0, 0.6);
 
-    pid_param_init(&MOTOR_PID_POS[0], PID_Position, 8192, 1024, 2048, 0.1f, 8192, 10, 0, 0.3);
-    pid_param_init(&MOTOR_PID_POS[1], PID_Position, 8192, 1024, 2048, 0.1f, 8192, 10, 0, 0.3);
-    pid_param_init(&MOTOR_PID_POS[2], PID_Position, 8192, 1024, 2048, 0.1f, 8192, 10, 0, 0.3);
-    pid_param_init(&MOTOR_PID_POS[3], PID_Position, 8192, 1024, 2048, 0.1f, 8192, 12, 0.3, 0);
-    pid_param_init(&MOTOR_PID_POS[4], PID_Position, 8192, 1024, 2048, 0.1f, 8192, 3, 0.3, 0.3);
+    pid_param_init(&MOTOR_PID_POS[0], PID_Position, 16384, 1024, 0, 0.1f, 16384, 10, 0, 0.3);
+    pid_param_init(&MOTOR_PID_POS[1], PID_Position, 16384, 1024, 0, 0.1f, 16384, 10, 0, 0.3);
+    pid_param_init(&MOTOR_PID_POS[2], PID_Position, 16384, 1024, 0, 0.1f, 16384, 10, 0, 0.3);
+    //这三个可以不用注册位置环。
+
+
+    //抬升和夹爪电机
+    pid_param_init(&MOTOR_PID_RPM[3], PID_Incremental, 8192, 900, 0, 0.1f, 16384, 15, 0.4, 0.2);
+    pid_param_init(&MOTOR_PID_RPM[4], PID_Incremental, 8192, 900, 0, 0.1f, 16384, 20, 0.5, 0.2);
+
+    pid_param_init(&MOTOR_PID_POS[3], PID_Position, 1024, 800, 0, 0.1f, 16384, 12, 0, 0.3);
+    pid_param_init(&MOTOR_PID_POS[4], PID_Position, 2048, 800, 0, 0.1f, 16384, 15, 0, 0.3);
+
 }
 
 #define Vy_MAX 6000.0f
@@ -82,34 +87,22 @@ void R1_config(void)
     state = init;
 }
 
-/**
- * @brief 抬升电机的转动阈值。
- * 没试过先全部给0，
- * 数值不要瞎几把乱设，一定一定先一点一点加上去。
- * 先设置一个固定是0，只要调另外一个就可以了
- */
-#define lift2ground 0
-#define lift2top 0
+
 void lift_init_state(void)//秧苗部分初始状态
 {
+
     lift_motor(lift2ground);
-    Finger_Open1;
-    Finger_Open2;
+    Finger1_Open;
+    Finger2_Open;
 }
 
 void lift_work_state(void)//秧苗部分工作状态
 {
-    Finger_Close1;
-    Finger_Close2;
+    Finger1_Close;
+    Finger2_Close;
     lift_motor(lift2top);
 }
 
-/**
- * @brief 夹爪机械臂转动阈值。
- * 和上面一样，不要一上来就给很大的值，先试一下
- */
-#define claw2ground 0
-#define claw2top 0
 void claw_init_state(void)//夹爪部分初始状态
 {
     Claw_Open;
@@ -120,7 +113,6 @@ void claw_work_state(void)//夹爪部分工作状态
 {
     Claw_Close;
     claw_motor(claw2top);
-    Claw_Open;
 }
 
 int belt_calc(void){
@@ -133,7 +125,7 @@ int belt_calc(void){
         belt_level = 0;
     }
     return belt_level * 4096;
-}
+}//测试一下这个belt_level能不能正常加减。
 
 void fsm(void)
 {
@@ -149,7 +141,6 @@ void fsm(void)
     
     case calibration:
         //夹爪、抬升电机校准，没什么思路，先放着。大不了全手动
-
         if(SWA != 0 && SWB != 0 && SWC != 0 && SWD != 0){//确认航模初始化成功
             if (SWD < 1500)
             {
@@ -170,20 +161,25 @@ void fsm(void)
             //秧苗部分控制
             if (SWB < 1200){
                 lift_init_state();
-            } else if (1300 < SWB && SWB < 1700)
-            {
-                lift_hold();
-            } else if (SWB > 1800)
+            } 
+//			else if (1300 < SWB && SWB < 1700)
+//            {
+//                lift_hold();
+//            } 
+			else if (SWB > 1800)
             {
                 lift_work_state();
             }
             //夹爪部分控制
             if (SWC < 1200){
                 claw_init_state();
-            } else if (1300 < SWC && SWC < 1700)
+            } 
+			else if (1300 < SWC && SWC < 1700)
             {
                 claw_hold();
-            } else if (SWC > 1800)
+                // claw_calibration();
+            } 
+			else if (SWC > 1800)
             {
                 claw_work_state();
             }
@@ -227,25 +223,27 @@ void fsm(void)
             //摇杆控制电机
             if(ABS(YaoGan_LEFT_Y - 1500) > 5){
                 float lift_pos = motorRealInfo[4].REAL_ANGLE;
-                lift_motor(lift_pos + ((YaoGan_LEFT_Y-1500)/10));
-            }else if(ABS(YaoGan_LEFT_Y-1500) <= 5){
+                lift_motor(lift_pos - ((YaoGan_LEFT_Y-1500)/5));
+            }
+			else if(ABS(YaoGan_LEFT_Y-1500) <= 5){
                 lift_hold();
             }
             if(ABS(YaoGan_RIGHT_X - 1500) > 5){
                 float claw_pos = motorRealInfo[3].REAL_ANGLE;
-                claw_motor(claw_pos + ((YaoGan_LEFT_X-1500)/10));
-            }else if(ABS(YaoGan_RIGHT_X - 1500) <= 5){
+                claw_motor(claw_pos + ((YaoGan_RIGHT_X-1500)/10));
+            }
+			else if(ABS(YaoGan_RIGHT_X - 1500) <= 5){
                 claw_hold();
             }
             //秧苗气动手指
             if (1300 < SWB && SWB < 1700)
             {
-                Finger_Open1;
-                Finger_Open2;
+                Finger1_Open;
+                Finger2_Open;
             } else if (SWB > 1800)
             {
-                Finger_Close1;
-                Finger_Close2;
+                Finger1_Close;
+                Finger2_Close;
             }
             //夹爪气缸
             if (1300 < SWC && SWC < 1700)

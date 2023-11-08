@@ -187,14 +187,27 @@ void MotorCtrlFunction(void *argument)
   /* Infinite loop */
   for(;;)
   {
+//	  lift_motor(lift2top);
     fsm();
+//	  claw_motor(-270);
+//	  if (SWD > 1500)
+//    {
+//      if(ABS(YaoGan_RIGHT_X - 1500) > 5){
+//          float claw_pos = motorRealInfo[3].REAL_ANGLE;
+//          claw_motor(claw_pos + ((YaoGan_RIGHT_X-1500)/10));
+//      }
+//      else if(ABS(YaoGan_RIGHT_X - 1500) <= 5){
+//          claw_hold();
+//      }
+//    }
+//	  claw_hold();
 	  // free_ctrl();
     // chassis_kinematic();
 //	belt_ctrl(8192);
 //    claw_motor((SWB - 1500) / 3);
 //    Motor_Control();
 //	M3508_Send_Currents();
-    osDelay(5);
+    osDelay(1);
   }
   /* USER CODE END MotorCtrlFunction */
 }

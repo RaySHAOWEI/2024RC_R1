@@ -19,24 +19,49 @@ extern MOTOR_REAL_INFO motorRealInfo[7];
 extern PID_T MOTOR_PID_RPM[7]; //速度pid信息
 extern PID_T MOTOR_PID_POS[7];	//位置pid信息
 
-#define M3508_BELT_MOTOR_ID_1       0x201
-#define M3508_BELT_MOTOR_ID_2       0x202
-#define M3508_BELT_MOTOR_ID_3       0x203
-#define M3508_CLAW                  0x204
-#define M3508_UPLIFT                0x205
+typedef struct Upper_Motor
+{
+    MOTOR_REAL_INFO *motorinfo;
+    float init_pos;     //初始位置，即最小值
+    float final_pos;    //最终位置，即最大值
+    float pos;
+}upper_motor;
 
-/*****电磁阀控制命令 引脚可根据板子调整 11.5廖俊******/   //！！有可能搞反！！
-#define Finger_Open1  HAL_GPIO_WritePin(GPIOF, GPIO_PIN_12, GPIO_PIN_RESET);	 //秧苗组1气动手指打开
-#define Finger_Close1  HAL_GPIO_WritePin(GPIOF, GPIO_PIN_12, GPIO_PIN_SET);	 	 //秧苗组1气动手指夹紧
+#define Motor_BELT_MOTOR_1       0
+#define Motor_BELT_MOTOR_2       1
+#define Motor_BELT_MOTOR_3       2
+#define Motor_CLAW               3
+#define Motor_UPLIFT             4
 
-#define Finger_Open2   HAL_GPIO_WritePin(GPIOF, GPIO_PIN_13, GPIO_PIN_RESET);	 //秧苗组2气动手指打开
-#define Finger_Close2  HAL_GPIO_WritePin(GPIOF, GPIO_PIN_13, GPIO_PIN_SET);		 //秧苗组2气动手指夹紧
+/**
+ * @brief 夹爪机械臂转动阈值。
+ * 没试过先全部给0，
+ * 数值不要瞎几把乱设，一定一定先一点一点加上去。
+ * 先设置一个固定是0，只要调另外一个就可以了
+ */
+#define claw2ground 0
+#define claw2top -270
 
-#define Cylinder_PUSH  HAL_GPIO_WritePin(GPIOF, GPIO_PIN_14, GPIO_PIN_SET);		 //气缸推送
-#define Cylinder_BACK  HAL_GPIO_WritePin(GPIOF, GPIO_PIN_14, GPIO_PIN_RESET);	 //气缸回
+/**
+ * @brief 抬升电机的转动阈值。
+ * 和上面一样，不要一上来就给很大的值，先试一下
+ */
+#define lift2ground 0
+#define lift2top -350
 
-#define Claw_Open   HAL_GPIO_WritePin(GPIOF, GPIO_PIN_15, GPIO_PIN_RESET);		 //夹爪打开
-#define Claw_Close  HAL_GPIO_WritePin(GPIOF, GPIO_PIN_15, GPIO_PIN_SET);		 //夹爪夹紧
+/*****电磁阀控制命令11.5廖俊 
+ * 11.7许少威******/
+#define Finger1_Open  HAL_GPIO_WritePin(finger1_GPIO_Port, finger1_Pin, GPIO_PIN_RESET);	 //秧苗组1气动手指打开
+#define Finger1_Close  HAL_GPIO_WritePin(finger1_GPIO_Port, finger1_Pin, GPIO_PIN_SET);	 	 //秧苗组1气动手指夹紧
+
+#define Finger2_Open   HAL_GPIO_WritePin(finger2_GPIO_Port, finger2_Pin, GPIO_PIN_RESET);	 //秧苗组2气动手指打开
+#define Finger2_Close  HAL_GPIO_WritePin(finger2_GPIO_Port, finger2_Pin, GPIO_PIN_SET);		 //秧苗组2气动手指夹紧
+
+#define Claw_Open   HAL_GPIO_WritePin(claw_GPIO_Port, claw_Pin, GPIO_PIN_RESET);		    //夹爪打开
+#define Claw_Close  HAL_GPIO_WritePin(claw_GPIO_Port, claw_Pin, GPIO_PIN_SET);		        //夹爪夹紧
+
+#define Cylinder_PUSH  HAL_GPIO_WritePin(cylinder_GPIO_Port, cylinder_Pin, GPIO_PIN_SET);	 //气缸推送
+#define Cylinder_BACK  HAL_GPIO_WritePin(cylinder_GPIO_Port, cylinder_Pin, GPIO_PIN_RESET);	 //气缸回
 
 //传送带控制
 void belt_ctrl(float target_spd);
@@ -48,7 +73,7 @@ void claw_motor(float target_spd);
 void claw_hold(void);
 
 //夹爪校准
-void claw_calibration(void);
+// void claw_calibration(void);
 
 //气动手指升降电机控制
 void lift_motor(float target_pos);

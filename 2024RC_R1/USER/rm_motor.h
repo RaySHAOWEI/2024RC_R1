@@ -116,7 +116,7 @@ typedef struct
 
     int16_t  TARGET_POS;		//目标角度(位置)
     float    TARGET_RPM;		//目标转速
-    int      Velflag;			//数度为零时，置1
+    int      Velflag;			//速度度为零时，置1
 
     VELOCITY_PLANNING 		Velocity_Planning;	//速度规划
     HOMING_MODE_TYPE 		HomingMode;			//电机回零模式
