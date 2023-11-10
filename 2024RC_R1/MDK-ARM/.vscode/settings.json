@@ -16,6 +16,7 @@
         "air_joy.h": "c",
         "chassis.h": "c",
         "upper.h": "c",
-        "stdio.h": "c"
+        "stdio.h": "c",
+        "fsm.h": "c"
     }
 }

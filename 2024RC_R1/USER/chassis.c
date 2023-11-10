@@ -115,11 +115,11 @@ Vx为线速度，Vy为角速度，W为自转角速度
 // 底盘运动学结算
 void chassis_kinematic(void)
 {
-    float a = 0.7071;
-    ROBOT_chassis.Target_RPM[0] = (-ROBOT_chassis.Vy) * a + (ROBOT_chassis.Vx * a) + (ROBOT_chassis.Vw) * L;
-    ROBOT_chassis.Target_RPM[1] = (-ROBOT_chassis.Vy) * a - (ROBOT_chassis.Vx * a) + (ROBOT_chassis.Vw) * L;
-    ROBOT_chassis.Target_RPM[2] = (ROBOT_chassis.Vy) * a - (ROBOT_chassis.Vx * a) + (ROBOT_chassis.Vw) * L;
-    ROBOT_chassis.Target_RPM[3] = (ROBOT_chassis.Vy) * a + (ROBOT_chassis.Vx * a) + (ROBOT_chassis.Vw) * L;
+    ROBOT_chassis.Target_RPM[0] = (-ROBOT_chassis.Vy*COS45 +ROBOT_chassis.Vx*COS45 +ROBOT_chassis.Vw*CHASSIS_R) *MS_transition_RM;
+	ROBOT_chassis.Target_RPM[1] = (-ROBOT_chassis.Vy*COS45 -ROBOT_chassis.Vx*COS45 +ROBOT_chassis.Vw*CHASSIS_R) *MS_transition_RM;
+	ROBOT_chassis.Target_RPM[2] = ( ROBOT_chassis.Vy*COS45 -ROBOT_chassis.Vx*COS45 +ROBOT_chassis.Vw*CHASSIS_R) *MS_transition_RM;
+	ROBOT_chassis.Target_RPM[3] = ( ROBOT_chassis.Vy*COS45 +ROBOT_chassis.Vx*COS45 +ROBOT_chassis.Vw*CHASSIS_R) *MS_transition_RM;
+
 
     for(int i=0; i < 4; i++) {
         ChassisInfo[i].Motor_Mode = SPEED_CONTROL_MODE;

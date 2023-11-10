@@ -10,14 +10,14 @@
 使用：观察PPM_Databuf[10]里边储存的脉宽值，利用串口进行观察
 ********************************************************************************************************************/
 
-uint16_t Time_Sys[4]={0};
-uint16_t Microsecond_Cnt=0;
+uint32_t TIME_ISR_CNT=0,LAST_TIME_ISR_CNT=0;
+uint16_t Microsecond_Cnt;
+uint16_t Time_Sys[4];
 
 static uint16_t PPM_buf[10]={0};
 uint16_t PPM_Databuf[10]={0};
 uint8_t ppm_update_flag=0;
 uint32_t now_ppm_time_send=0;
-uint32_t TIME_ISR_CNT=0,LAST_TIME_ISR_CNT=0;
 
 
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)

@@ -50,19 +50,20 @@ typedef struct VELOCITY_PLANNING //速度规划
 
 /**
  * @brief 回零模式结构体。说实在，这个模式和速度转矩没什么差别。直接用速度转矩即可
+ * 20231109许少威：改成校准模式。废物利用一下。
 */
 typedef struct
 {
-    float current;
-    float Vel;				//目标速度
+    float current;    //没用，之后都删了。
+    float Vel;				//回零的速度，正负代表正转反转。根据实际情况设置。
     float output;
-    int16_t  TARGET_TORQUE;//目标转矩，用电流表示
-    int flag;
+    int16_t  TARGET_TORQUE;//回零目标转矩，用电流表示
+    int done_flag;  //回零成功标志位
     int32_t cnt;
 }HOMING_MODE_TYPE;
 
 /**
-  * @brief  速度转矩模式结构体
+  * @brief  速度转矩模式结构体(弃用)
 */
 typedef struct
 {
@@ -75,7 +76,7 @@ typedef struct
 }VELOCITY_TARQUE_TYPDEF;
 
 /**
-  * @brief  位置转矩结构体
+  * @brief  位置转矩结构体{弃用}
   */
 typedef struct
 {
@@ -115,13 +116,14 @@ typedef struct
     int16_t  	TARGET_CURRENT;		// 目标转矩电流
 
     int16_t  TARGET_POS;		//目标角度(位置)
+    int16_t  TARGET_TORQUE;//目标转矩，用电流表示
     float    TARGET_RPM;		//目标转速
     int      Velflag;			//速度度为零时，置1
+    int Stalled;          //堵转标志位
+    int32_t Cnt;          //计数标志
 
     VELOCITY_PLANNING 		Velocity_Planning;	//速度规划
     HOMING_MODE_TYPE 		HomingMode;			//电机回零模式
-    VELOCITY_TARQUE_TYPDEF  Velocity_Tarque;	//速度转矩结构体
-    POS_TARQUE_TYPDEF		Position_Tarque; 	//位置转矩结构体
 
     // 角度积分时用到下面变量
     float		REAL_ANGLE;         //处理过的真实角度（必须用float）
@@ -155,7 +157,7 @@ float Position_Control(MOTOR_REAL_INFO *MOTOR_REAL_INFO,float Target_Pos);
 void Speed_Control(MOTOR_REAL_INFO* RM_MOTOR, float Target_RPM);
 void Vel_Torque_Control(MOTOR_REAL_INFO *MOTO_REAL_INFO, uint16_t Target_Torque, float Target_Vel);
 void Pos_Torque_Control(MOTOR_REAL_INFO *MOTO_REAL_INFO, uint16_t Target_Torque, float Target_Pos);
-void Homeing_Mode(MOTOR_REAL_INFO* RM_MOTOR);
+void Homeing_Mode(MOTOR_REAL_INFO* RM_MOTOR, float homeing_vel,int16_t homeing_torque);
 // M3508返回的电机真实信息
 
 #endif //INC_2024RC_R1_RM_MOTOR_H

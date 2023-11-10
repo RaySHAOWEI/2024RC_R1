@@ -160,6 +160,9 @@ void RM_MOTOR_Angle_Integral(MOTOR_REAL_INFO* RM_MOTOR)
 /**
  * @brief 发送电机数据
  * 向can2发送五个电机数据
+ * 
+ * 之后的优化想法：加一个can形参，用于选择can1还是can2，motorrealinfo结构体分成两个，一个专门接收can1数据
+ * 一个专门接收can2数据，形参是can1就把can1电机结构体的目标电流发出去。
  * @param NULL
  * @return NULL
 */
@@ -227,6 +230,8 @@ void M3508_Send_Currents(void)
  * @brief 电机控制模式
  * @param NULL
  * @return NULL
+ * 
+ * 之后的优化方向：加一个can形参。选择计算的结构体，和get_motor_measure配合。
 */
 void Motor_Control(void)
 {
@@ -260,79 +265,15 @@ void Motor_Control(void)
             case POSITION_CONTROL_MODE://位置模式
             {
                 pid_calc(&MOTOR_PID_POS[i],motorRealInfo[i].TARGET_POS, motorRealInfo[i].REAL_ANGLE);//位置环
-                pid_calc(&MOTOR_PID_RPM[i], MOTOR_PID_POS[i].output, motorRealInfo[i].RPM);//速度环
-                
-                // if(ABS(motorRealInfo[i].RPM) < 5)//判断是否堵转（待测试）
-                // {
-                //     motorRealInfo[i].Velflag = 1;
-                //     if(ABS(motorRealInfo[i].CURRENT) > 1.5 * ABS(MOTOR_PID_RPM[i].MaxOutput))
-                //     {
-                //         motorRealInfo[i].stalled = 1;
-                //         motorRealInfo[i].pos_ok = 0;
-                //     }else
-                //     {
-                //         motorRealInfo[i].stalled = 0;
-                //         motorRealInfo[i].pos_ok = 1;
-                //     }
-                // }
-                // else{
-                //     motorRealInfo[i].pos_ok = 0;
-                //     motorRealInfo[i].Velflag = 0;
-                //     motorRealInfo[i].stalled = 0;
-                // }
-
-            //判断是否到达目标位置
-//               if(fabsf(motorRealInfo[i].RPM) <=10)
-//               {
-//                    if(ABS(motorRealInfo[i].CURRENT) > 1.5 * ABS(MOTOR_PID_RPM[i].MaxOutput))
-//                    {
-//                        motorRealInfo[i].Position_Tarque.Cnt = 0;
-//                        motorRealInfo[i].stalled = 1;
-//                    }else
-//                    {
-//                        motorRealInfo[i].Position_Tarque.Cnt++;
-//                        motorRealInfo[i].stalled = 0;
-//                    }
-//               }
-//               else
-//               {
-//                   motorRealInfo[i].Position_Tarque.Cnt = 0;
-//               }
-
-//               if(motorRealInfo[i].Position_Tarque.Cnt >= 50)//50ms
-//               {
-//                
-//                   motorRealInfo[i].Position_Tarque.Cnt = 0;
-//                   motorRealInfo[i].pos_ok = 1;
-//               }
-
-
+                motorRealInfo[i].TARGET_RPM = MOTOR_PID_POS[i].output;
+                pid_calc(&MOTOR_PID_RPM[i], motorRealInfo[i].TARGET_RPM, motorRealInfo[i].RPM);//速度环
                 break;
             }
 
             case SPEED_TARQUE_CONTROL_MODE://速度转矩模式
             {
-                pid_calc(&MOTOR_PID_RPM[i],motorRealInfo[i].Velocity_Tarque.Target_Vel,motorRealInfo[i].RPM);	//速度环
-                MOTOR_PID_RPM[i].output = Max_Value_Limit(MOTOR_PID_RPM[i].output,motorRealInfo[i].Velocity_Tarque.TARGET_TORQUE);	//限制转矩模式时电流值
-
-                //判断是否夹取
-                //flag = 1夹取成功
-                // if(fabsf(motorRealInfo[i].RPM) <=10)
-                // {
-                //     motorRealInfo[i].Velocity_Tarque.Cnt++;
-                // }
-                // else
-                // {
-                //     motorRealInfo[i].Velocity_Tarque.Cnt = 0;
-                // }
-
-                // if(motorRealInfo[i].Velocity_Tarque.Cnt >= 10)
-                // {
-                //     motorRealInfo[i].Velocity_Tarque.Cnt=0;
-                //     motorRealInfo[i].Velocity_Tarque.Flag = 1;
-                //     motorRealInfo[i].Motor_Mode= SPEED_CONTROL_MODE;
-                //     motorRealInfo[i].TARGET_RPM = 0;
-                // }
+                pid_calc(&MOTOR_PID_RPM[i],motorRealInfo[i].TARGET_RPM,motorRealInfo[i].RPM);	//速度环
+                MOTOR_PID_RPM[i].output = Max_Value_Limit(MOTOR_PID_RPM[i].output,motorRealInfo[i].TARGET_TORQUE);	//限制转矩模式时电流值
                 break;
             }
 
@@ -342,42 +283,40 @@ void Motor_Control(void)
                 break;
             }
 
-            case HOMEING_MODE://说实在，和速度转矩没什么差别。直接用速度转矩即可
+            case HOMEING_MODE://调用速度转矩模式，小转矩进行回零，检测停转一段时间后角度积分置零。
             {
-                Homeing_Mode(&motorRealInfo[i]);	//调用校准模式
-                pid_calc(&MOTOR_PID_RPM[i], motorRealInfo[i].TARGET_RPM, motorRealInfo[i].RPM); 	//速度环
-                MOTOR_PID_RPM[i].output = Max_Value_Limit(MOTOR_PID_RPM[i].output,motorRealInfo[i].HomingMode.TARGET_TORQUE);	//限制校准模式电流
+                if(ABS(motorRealInfo[i].RPM) <= motorRealInfo[i].TARGET_RPM / 2)
+                    {
+                        motorRealInfo[i].HomingMode.cnt++;
+                    }
+                else
+                    {
+                        motorRealInfo[i].HomingMode.cnt = 0;
+                    }
+
+                if(motorRealInfo[i].HomingMode.cnt >= 30) //计数25次
+                    {
+                        //清除输出
+                        // motorRealInfo[i].HomingMode.cnt = 0;
+                        motorRealInfo[i].REAL_ANGLE=0.0f;
+                        motorRealInfo[i].HomingMode.done_flag=1;//标志位置一，建议使用这个模式的时候加个判断，判断该标志位是1的时候切换其他控制模式。
+                        motorRealInfo[i].Motor_Mode = SPEED_CONTROL_MODE;
+                        motorRealInfo[i].TARGET_RPM = 0;
+                        motorRealInfo[i].TARGET_TORQUE = 0;
+                    }
+
+                pid_calc(&MOTOR_PID_RPM[i],motorRealInfo[i].TARGET_RPM,motorRealInfo[i].RPM);	//速度环
+                MOTOR_PID_RPM[i].output = Max_Value_Limit(MOTOR_PID_RPM[i].output,motorRealInfo[i].TARGET_TORQUE);	//限制转矩模式时电流值
+                
+                break;
             }
 
             case POSITION_TORQUE_MODE://位置转矩模式
             {
-                pid_calc(&MOTOR_PID_POS[i],motorRealInfo[i].Position_Tarque.Pos, motorRealInfo[i].REAL_ANGLE);//位置环
-                pid_calc(&MOTOR_PID_RPM[i], MOTOR_PID_POS[i].output, motorRealInfo[i].RPM);//速度环
-                MOTOR_PID_RPM[i].output = Max_Value_Limit(MOTOR_PID_RPM[i].output,motorRealInfo[i].Position_Tarque.TARGET_TORQUE);//限制转矩模式时电流值
-                
-                if(ABS(motorRealInfo[i].CURRENT) >  1.2 * ABS(motorRealInfo[i].Position_Tarque.TARGET_TORQUE))//判断是否堵转（待测试）
-                {
-                    motorRealInfo[i].Position_Tarque.Flag = 1;
-                }
-                else{
-                    motorRealInfo[i].Position_Tarque.Flag = 0;
-                }
-                
-               //判断是否到达目标位置
-            //    if(fabsf(motorRealInfo[i].RPM) <=10)
-            //    {
-            //        motorRealInfo[i].Position_Tarque.Cnt++;
-            //    }
-            //    else
-            //    {
-            //        motorRealInfo[i].Position_Tarque.Cnt = 0;
-            //    }
-
-            //    if(motorRealInfo[i].Position_Tarque.Cnt>=50)//50ms
-            //    {
-            //        motorRealInfo[i].Position_Tarque.Cnt = 0;
-            //        motorRealInfo[i].Position_Tarque.Flag = 1;
-            //    }
+                pid_calc(&MOTOR_PID_POS[i],motorRealInfo[i].TARGET_POS, motorRealInfo[i].REAL_ANGLE);//位置环
+                motorRealInfo[i].TARGET_RPM = MOTOR_PID_POS[i].output;
+                pid_calc(&MOTOR_PID_RPM[i], motorRealInfo[i].TARGET_RPM, motorRealInfo[i].RPM);//速度环
+                MOTOR_PID_RPM[i].output = Max_Value_Limit(MOTOR_PID_RPM[i].output,motorRealInfo[i].TARGET_TORQUE);//限制转矩模式时电流值
                 break;
             }
 
@@ -430,47 +369,23 @@ float Max_Value_Limit(float Value, float Limit)
     return Value;
 }
 
-
-
 /**
-  * @brief  Homing mode 回零模式
-  * @param  电机结构体
-  * @return NULL
+ * @brief 回零校准模式
+ * 
+ * @param RM_MOTOR 
+ * @param homeing_vel 
  */
-void Homeing_Mode(MOTOR_REAL_INFO* RM_MOTOR)
+void Homeing_Mode(MOTOR_REAL_INFO* RM_MOTOR, float homeing_vel,int16_t homeing_torque)
 {
-    int Sign_Vel;
-    RM_MOTOR->HomingMode.flag = 0;
-
-    if (RM_MOTOR->HomingMode.Vel >= 0)
-    {
-        Sign_Vel = -1.0f;
-    }
-
-    //转速赋值
+    RM_MOTOR->Motor_Mode = HOMEING_MODE;
+    RM_MOTOR->HomingMode.done_flag = 0;//回零成功的标志位置零
+    //内部存值
+    RM_MOTOR->HomingMode.Vel = homeing_vel;
+    RM_MOTOR->HomingMode.TARGET_TORQUE = homeing_torque;
+    //赋值给外部
     RM_MOTOR->TARGET_RPM = RM_MOTOR->HomingMode.Vel;
-
-    if(fabsf(RM_MOTOR->RPM) <= 30)
-    {
-        RM_MOTOR->HomingMode.cnt++;
-    }
-    else
-    {
-        RM_MOTOR->HomingMode.cnt = 0;
-    }
-
-    if(RM_MOTOR->HomingMode.cnt >= 50) //500ms
-    {
-        //清除输出
-        RM_MOTOR->HomingMode.cnt = 0;
-        RM_MOTOR->REAL_ANGLE=0.0f;
-        RM_MOTOR->HomingMode.flag=1;
-        RM_MOTOR->Motor_Mode = SPEED_CONTROL_MODE;
-        RM_MOTOR->TARGET_RPM = 0;
-    }
+    RM_MOTOR->TARGET_TORQUE = RM_MOTOR->HomingMode.TARGET_TORQUE;
 }
-
-
 
 /**
  * @brief 梯度速度规划
@@ -575,8 +490,8 @@ float Position_Control(MOTOR_REAL_INFO *MOTO_REAL_INFO,float target_pos)
 void Pos_Torque_Control(MOTOR_REAL_INFO *MOTO_REAL_INFO, uint16_t Target_Torque, float Target_Pos)
 {
     MOTO_REAL_INFO->Motor_Mode = POSITION_TORQUE_MODE;
-    MOTO_REAL_INFO->Position_Tarque.Pos = Target_Pos;
-    MOTO_REAL_INFO->Position_Tarque.TARGET_TORQUE = Target_Torque;
+    MOTO_REAL_INFO->TARGET_POS = Target_Pos;
+    MOTO_REAL_INFO->TARGET_TORQUE = Target_Torque;
 }
 
 /**
@@ -599,8 +514,8 @@ void Speed_Control(MOTOR_REAL_INFO *RM_MOTOR, float Target_RPM)
 void Vel_Torque_Control(MOTOR_REAL_INFO *MOTO_REAL_INFO, uint16_t Target_Torque, float Target_Vel)
 {
     MOTO_REAL_INFO->Motor_Mode = SPEED_TARQUE_CONTROL_MODE;
-    MOTO_REAL_INFO->Velocity_Tarque.Target_Vel = Target_Vel;
-    MOTO_REAL_INFO->Velocity_Tarque.TARGET_TORQUE = Target_Torque;
+    MOTO_REAL_INFO->TARGET_RPM = Target_Vel;
+    MOTO_REAL_INFO->TARGET_TORQUE = Target_Torque;
 }
 
 /**

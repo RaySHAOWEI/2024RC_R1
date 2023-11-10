@@ -12,6 +12,7 @@ typedef enum {
     init,               //初始化
     calibration,        //校准
     chassis_ctrl,      //底盘控制模式
+	chassis_ctrl_change,//换头模式
     upper_ctrl,         //上层控制模式
 }Robot_State;
 
@@ -31,7 +32,7 @@ void claw_init_state(void);
 
 void claw_work_state(void);
 
-int belt_calc(void);
+float belt_calc(void);
 
 void fsm(void);
 

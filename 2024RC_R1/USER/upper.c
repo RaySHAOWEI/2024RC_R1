@@ -15,9 +15,51 @@ void lim(float *input, float max, float min) {
     }
 }
 
+GPIO_PinState claw_mode;
+
+void Finger1_Close(void){
+    HAL_GPIO_WritePin(finger1_GPIO_Port, finger1_Pin, GPIO_PIN_SET);	 //秧苗组1气动手指夹紧
+}
+    
+void Finger1_Open(void){
+    HAL_GPIO_WritePin(finger1_GPIO_Port, finger1_Pin, GPIO_PIN_RESET);	 	 //秧苗组1气动手指打开
+}
+
+void Finger2_Close(void){
+    HAL_GPIO_WritePin(finger2_GPIO_Port, finger2_Pin, GPIO_PIN_SET);	 //秧苗组2气动手指夹紧
+}
+void Finger2_Open(void){
+    HAL_GPIO_WritePin(finger2_GPIO_Port, finger2_Pin, GPIO_PIN_RESET);		 //秧苗组2气动手指打开
+}
+
+void Claw_Open(void){
+    HAL_GPIO_WritePin(claw_GPIO_Port, claw_Pin, GPIO_PIN_SET);
+}//夹爪夹紧
+
+void Claw_Close(void){
+    HAL_GPIO_WritePin(claw_GPIO_Port, claw_Pin, GPIO_PIN_RESET);
+}//夹爪打开
+
+void Claw_turn(void)
+{
+    if (claw_mode == GPIO_PIN_SET){
+        HAL_GPIO_WritePin(claw_GPIO_Port, claw_Pin, GPIO_PIN_RESET);
+    }else {
+        HAL_GPIO_WritePin(claw_GPIO_Port, claw_Pin, GPIO_PIN_SET);
+    }
+    
+}
+
+void Cylinder_PUSH(void){
+    HAL_GPIO_WritePin(cylinder_GPIO_Port, cylinder_Pin, GPIO_PIN_SET);	 //气缸推送
+}
+void Cylinder_BACK(void){
+    HAL_GPIO_WritePin(cylinder_GPIO_Port, cylinder_Pin, GPIO_PIN_RESET);	 //气缸回
+}
+
 void belt_ctrl(float target_spd)
 {
-    float belt_spd[3] = {target_spd,target_spd,target_spd};
+    float belt_spd[3] = {target_spd * 0.025f,target_spd * 4.0f,target_spd * 0.025f};//上一次：{target_spd * 0.025f,target_spd * 4.0f,target_spd * 0.025f}
     Speed_Control(&motorRealInfo[Motor_BELT_MOTOR_1], belt_spd[Motor_BELT_MOTOR_1]);
     Speed_Control(&motorRealInfo[Motor_BELT_MOTOR_2], belt_spd[Motor_BELT_MOTOR_2]);
     Speed_Control(&motorRealInfo[Motor_BELT_MOTOR_3], belt_spd[Motor_BELT_MOTOR_3]);

@@ -610,6 +610,26 @@
               <FilePath>..\USER\air_joy.h</FilePath>
             </File>
             <File>
+              <FileName>chassis.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\USER\chassis.c</FilePath>
+            </File>
+            <File>
+              <FileName>chassis.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\USER\chassis.h</FilePath>
+            </File>
+            <File>
+              <FileName>FSM.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\USER\FSM.c</FilePath>
+            </File>
+            <File>
+              <FileName>FSM.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\USER\FSM.h</FilePath>
+            </File>
+            <File>
               <FileName>pid.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\USER\pid.c</FilePath>
@@ -648,26 +668,6 @@
               <FileName>usr_can.h</FileName>
               <FileType>5</FileType>
               <FilePath>..\USER\usr_can.h</FilePath>
-            </File>
-            <File>
-              <FileName>chassis.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\USER\chassis.c</FilePath>
-            </File>
-            <File>
-              <FileName>chassis.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>..\USER\chassis.h</FilePath>
-            </File>
-            <File>
-              <FileName>FSM.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\USER\FSM.c</FilePath>
-            </File>
-            <File>
-              <FileName>FSM.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>..\USER\FSM.h</FilePath>
             </File>
           </Files>
         </Group>

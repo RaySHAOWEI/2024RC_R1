@@ -19,8 +19,20 @@
 #define CHASSIS_M3508_M3_ID       0x203
 #define CHASSIS_M3508_M4_ID       0x204
 
-#define PI 3.14
+
+
+#define COS60               0.500000f
+#define COS30               0.866025f
+#define COS45               0.707106f
+#define V_REAL              0.128f/60                   //轮子的线速度
+#define PI                  3.1415926f                  //PI的值
+#define WHEEL_R             0.152f/2                    //轮子半径 
+#define RM_transition_MS    (PI*WHEEL_R)/570.0f         //转速与速度的转换  
+#define MS_transition_RM    570.0f/(PI*WHEEL_R)         //速度与转速的转换  
 #define L 70
+
+#define CHASSIS_R 0.70f
+
 
 extern ROBOT_CHASSIS ROBOT_chassis;   // 机器人底盘结构体
 extern MOTOR_REAL_INFO ChassisInfo[4];

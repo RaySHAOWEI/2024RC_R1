@@ -188,7 +188,19 @@ void MotorCtrlFunction(void *argument)
   for(;;)
   {
 //	  lift_motor(lift2top);
-    fsm();
+//	  belt_ctrl(100);
+     fsm();
+//    Homeing_Mode(&motorRealInfo[Motor_CLAW], 100, 512);
+//        do
+//        {
+            // Homeing_Mode(&motorRealInfo[Motor_CLAW], 150, 8192);
+            // Motor_Control();
+//      if (motorRealInfo[Motor_CLAW].HomingMode.done_flag == 0){
+//        Homeing_Mode(&motorRealInfo[Motor_CLAW], 1000, 8192);
+//		Motor_Control();
+//      }
+//        } while (motorRealInfo[Motor_CLAW].HomingMode.done_flag != 1);
+        // Vel_Torque_Control(&motorRealInfo[Motor_CLAW], , float Target_Vel)
 //	  claw_motor(-270);
 //	  if (SWD > 1500)
 //    {

@@ -49,19 +49,24 @@ typedef struct Upper_Motor
 #define lift2ground 0
 #define lift2top -350
 
+
+extern GPIO_PinState claw_mode;
+
 /*****电磁阀控制命令11.5廖俊 
  * 11.7许少威******/
-#define Finger1_Open  HAL_GPIO_WritePin(finger1_GPIO_Port, finger1_Pin, GPIO_PIN_RESET);	 //秧苗组1气动手指打开
-#define Finger1_Close  HAL_GPIO_WritePin(finger1_GPIO_Port, finger1_Pin, GPIO_PIN_SET);	 	 //秧苗组1气动手指夹紧
+void Finger1_Close(void);
+void Finger1_Open(void);
 
-#define Finger2_Open   HAL_GPIO_WritePin(finger2_GPIO_Port, finger2_Pin, GPIO_PIN_RESET);	 //秧苗组2气动手指打开
-#define Finger2_Close  HAL_GPIO_WritePin(finger2_GPIO_Port, finger2_Pin, GPIO_PIN_SET);		 //秧苗组2气动手指夹紧
+void Finger2_Close(void);
+void Finger2_Open(void);
 
-#define Claw_Open   HAL_GPIO_WritePin(claw_GPIO_Port, claw_Pin, GPIO_PIN_RESET);		    //夹爪打开
-#define Claw_Close  HAL_GPIO_WritePin(claw_GPIO_Port, claw_Pin, GPIO_PIN_SET);		        //夹爪夹紧
+void Claw_Open(void);
+void Claw_Close(void);
 
-#define Cylinder_PUSH  HAL_GPIO_WritePin(cylinder_GPIO_Port, cylinder_Pin, GPIO_PIN_SET);	 //气缸推送
-#define Cylinder_BACK  HAL_GPIO_WritePin(cylinder_GPIO_Port, cylinder_Pin, GPIO_PIN_RESET);	 //气缸回
+void Claw_turn(void);
+
+void Cylinder_PUSH(void);
+void Cylinder_BACK(void);
 
 //传送带控制
 void belt_ctrl(float target_spd);
