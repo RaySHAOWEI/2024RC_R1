@@ -4,6 +4,12 @@
 
 #include "chassis.h"
 
+/**
+ * @brief 底盘轻度封装，只适用于四轮万向轮底盘，之后舵轮的封装也可以在这里继续下去。
+ * 后续封装思路：建立底盘结构体，继承电机结构体，pid结构地，底盘规划结构体，调用只需要选定底盘模式（四轮万向轮、舵轮、麦轮……）
+ * 目前只是将motor.c里面的一些can通讯代码复制过来（因为motor.c的封装也没有很到位，直接在里面复用的话，结构体数据会窜用，电机可能会发疯）
+ */
+
 MOTOR_REAL_INFO ChassisInfo[4];
 PID_T Chassis_PID_RPM[4]; //速度pid信息
 PID_T Chassis_PID_POS[4];	//位置pid信息

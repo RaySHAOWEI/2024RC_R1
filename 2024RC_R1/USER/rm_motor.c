@@ -6,6 +6,14 @@
 #include "can.h"
 #include "pid.h"
 
+/**
+ * @brief 大疆电机封装，封装度还不够，针对两条can总线都有大疆电机的情况不能很好的适应，所有之后有些函数的形参会加入can的判断。
+ * 现在能想到的具体优化方案我会放到具体的函数注释里面。
+ * 
+ * 每个函数都有注释，具体不懂的可以群里问我或者私聊我。
+ * 
+ */
+
 MOTOR_REAL_INFO motorRealInfo[7];
 PID_T MOTOR_PID_RPM[7]; //速度pid信息
 PID_T MOTOR_PID_POS[7];	//位置pid信息

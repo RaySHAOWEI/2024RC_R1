@@ -1,6 +1,16 @@
 //
 // Created by Ray on 2023/11/2.
 //
+/**
+ * @file usr_can.c
+ * @author Ray
+ * @brief 这是用户can滤波器的开启函数，大疆官方的东西复制过来的，控过3508的应该都了解过。
+ * @version 0.1
+ * @date 2023-11-21
+ * 
+ * @copyright Copyright (c) 2023
+ * 
+ */
 
 #include "usr_can.h"
 #include "upper.h"

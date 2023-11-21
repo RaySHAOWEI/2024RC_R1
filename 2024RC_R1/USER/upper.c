@@ -1,8 +1,19 @@
 //
 // Created by Ray on 2023/11/3.
 //
+/**
+ * @file upper.c
+ * @author Ray
+ * @brief 上层机构的封装，这个大家大概看一下就行了，之后迭代还得重新搞。主要是学一下怎么运用rm_motor.c里面的函数。这些函数基本是不会变的了
+ * @version 0.1
+ * @date 2023-11-20
+ * 
+ * @copyright Copyright (c) 2023
+ * 
+ */
 
 #include "upper.h"
+
 
 void lim(float *input, float max, float min) {
     if (max > min){
@@ -95,6 +106,8 @@ void claw_hold(void)
 /**
  * @brief 夹爪校准函数
  * 待测试，测试之后直接同理得到升降电机的校准
+ * 
+ * 11.9 用不了，狗屁不通，注释掉了
  */
 // void claw_calibration(void)
 // {
@@ -117,6 +130,11 @@ void claw_hold(void)
 //     }
 // }
 
+/**
+ * @brief 升降电机控制。
+ * 
+ * @param target_pos 
+ */
 void lift_motor(float target_pos)
 {
     lim(&target_pos,lift2ground,lift2top);
